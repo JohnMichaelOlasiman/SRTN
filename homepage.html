@@ -29,8 +29,8 @@
                 <li><a href="#about" class="active">About</a></li>
                 <li><a href="#how-it-works">How It Works</a></li>
                 <li><a href="#features">Features</a></li>
-                <li><a href="#comparison">Comparison</a></li>
-                <li><a href="index.html" class="try-button">Try Scheduler</a></li>
+                <li><a href="#comparison">Application</a></li>
+                <li><a href="index.html" class="try-button">Scheduler</a></li>
             </ul>
             <div class="hamburger">
                 <span></span>
@@ -51,8 +51,7 @@
                     Learn how it works and try our interactive scheduler.
                 </p>
                 <div class="hero-buttons">
-                    <a href="index.html" class="primary-button">Try SRTN Scheduler</a>
-                    <a href="#how-it-works" class="secondary-button">Learn More</a>
+                    <a href="index.html" class="primary-button">Start SRTN Scheduler</a>
                 </div>
             </div>
             <div class="hero-image">
@@ -265,104 +264,98 @@
         </div>
     </section>
 
-    <!-- Comparison Section -->
-    <section id="comparison" class="comparison">
-        <div class="container">
-            <div class="section-header">
-                <h2>SRTN vs. Other Scheduling Algorithms</h2>
-                <div class="underline"></div>
-            </div>
-            <div class="comparison-table-container">
-                <table class="comparison-table">
-                    <thead>
-                        <tr>
-                            <th>Algorithm</th>
-                            <th>Preemptive</th>
-                            <th>Average Waiting Time</th>
-                            <th>Starvation Risk</th>
-                            <th>Implementation Complexity</th>
-                            <th>Best Use Case</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="highlighted">
-                            <td><strong>SRTN</strong></td>
-                            <td>Yes</td>
-                            <td>Minimum</td>
-                            <td>High</td>
-                            <td>Medium</td>
-                            <td>Interactive systems with varying process lengths</td>
-                        </tr>
-                        <tr>
-                            <td>First Come First Served (FCFS)</td>
-                            <td>No</td>
-                            <td>High</td>
-                            <td>None</td>
-                            <td>Low</td>
-                            <td>Batch processing systems</td>
-                        </tr>
-                        <tr>
-                            <td>Shortest Job First (SJF)</td>
-                            <td>No</td>
-                            <td>Low</td>
-                            <td>Medium</td>
-                            <td>Low</td>
-                            <td>Systems with known job lengths</td>
-                        </tr>
-                        <tr>
-                            <td>Round Robin (RR)</td>
-                            <td>Yes</td>
-                            <td>Medium</td>
-                            <td>None</td>
-                            <td>Low</td>
-                            <td>Time-sharing systems</td>
-                        </tr>
-                        <tr>
-                            <td>Priority Scheduling</td>
-                            <td>Can be both</td>
-                            <td>Varies</td>
-                            <td>High</td>
-                            <td>Medium</td>
-                            <td>Systems with clear process priorities</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="comparison-notes">
-                <h3>Key Considerations</h3>
-                <div class="notes-grid">
-                    <div class="note-card">
-                        <h4>Starvation in SRTN</h4>
-                        <p>
-                            Long processes may experience starvation if shorter processes continuously arrive. 
-                            This is a significant drawback of SRTN in systems with a mix of long and short processes.
-                        </p>
-                    </div>
-                    <div class="note-card">
-                        <h4>Prediction Challenge</h4>
-                        <p>
-                            SRTN requires knowledge of process burst times in advance, which can be difficult to predict accurately in real systems.
-                            Estimation techniques are often used in practical implementations.
-                        </p>
-                    </div>
-                    <div class="note-card">
-                        <h4>Context Switching Overhead</h4>
-                        <p>
-                            The preemptive nature of SRTN can lead to frequent context switches, which introduce overhead.
-                            This overhead should be considered when evaluating the algorithm's performance.
-                        </p>
-                    </div>
+    <!-- Real-world Applications Section -->
+<section id="comparison" class="comparison">
+    <div class="container">
+        <div class="section-header">
+            <h2>Real-world Applications of SRTN</h2>
+            <div class="underline"></div>
+        </div>
+        <div class="comparison-table-container">
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Application Domain</th>
+                        <th>Implementation</th>
+                        <th>Benefits</th>
+                        <th>Challenges</th>
+                        <th>Performance Impact</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="highlighted">
+                        <td><strong>Web Servers</strong></td>
+                        <td>Request handling prioritization</td>
+                        <td>Faster response for small requests</td>
+                        <td>Estimating request processing time</td>
+                        <td>Improved average response time</td>
+                    </tr>
+                    <tr>
+                        <td>Cloud Computing</td>
+                        <td>VM and container scheduling</td>
+                        <td>Efficient resource utilization</td>
+                        <td>Workload prediction accuracy</td>
+                        <td>Better throughput for small tasks</td>
+                    </tr>
+                    <tr>
+                        <td>Real-time Systems</td>
+                        <td>Task scheduling in embedded systems</td>
+                        <td>Meeting time constraints</td>
+                        <td>Overhead of preemption</td>
+                        <td>Reduced deadline misses</td>
+                    </tr>
+                    <tr>
+                        <td>Database Systems</td>
+                        <td>Query execution scheduling</td>
+                        <td>Faster results for simple queries</td>
+                        <td>Query execution time estimation</td>
+                        <td>Improved interactive performance</td>
+                    </tr>
+                    <tr>
+                        <td>Mobile Operating Systems</td>
+                        <td>Application process scheduling</td>
+                        <td>Better UI responsiveness</td>
+                        <td>Battery consumption from context switches</td>
+                        <td>Enhanced user experience</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="comparison-notes">
+            <h3>Implementation Considerations</h3>
+            <div class="notes-grid">
+                <div class="note-card">
+                    <h4>Burst Time Estimation</h4>
+                    <p>
+                        In real-world systems, accurately estimating the remaining execution time is challenging. 
+                        Many implementations use historical data, statistical models, or machine learning techniques to predict process execution times.
+                    </p>
+                </div>
+                <div class="note-card">
+                    <h4>Hybrid Approaches</h4>
+                    <p>
+                        Practical systems often implement SRTN as part of a hybrid scheduling approach, combining it with other algorithms like Round Robin 
+                        to mitigate starvation issues while maintaining good average response times.
+                    </p>
+                </div>
+                <div class="note-card">
+                    <h4>Adaptive Scheduling</h4>
+                    <p>
+                        Modern implementations of SRTN often include adaptive mechanisms that adjust scheduling parameters based on system load, 
+                        resource availability, and performance metrics to optimize for different workload characteristics.
+                    </p>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
     <!-- CTA Section -->
     <section class="cta">
         <div class="container">
-            <h2>Ready to Try SRTN Scheduling?</h2>
+            <h2>Launch the SRTN Scheduling</h2>
             <p>Experiment with our interactive SRTN Scheduler to see how different process configurations affect waiting time, turnaround time, and overall efficiency.</p>
-            <a href="index.html" class="cta-button">Launch SRTN Scheduler</a>
+            <a href="index.html" class="cta-button">Open SRTN Scheduler</a>
         </div>
     </section>
 

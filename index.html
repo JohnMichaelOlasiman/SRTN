@@ -7,7 +7,7 @@
     <link href="./style.css" rel="stylesheet">
     
 </head>
-<body>
+<<body>
     <div class="container">
         <div class="header-gradient shadow-md">
             <h1 class="text-3xl font-bold text-center">Shortest Remaining Time Next (SRTN) Scheduler</h1>
@@ -474,7 +474,6 @@
                 // Add event listeners for animation buttons
                 const showProcessBtn = document.getElementById('show-process-btn');
                 const resetAnimationBtn = document.getElementById('reset-animation-btn');
-                const manualAnimationBtn = document.getElementById('manual-animation-btn');
                 
                 if (showProcessBtn) {
                     showProcessBtn.addEventListener('click', animateProcessesToGantt);
@@ -482,6 +481,9 @@
                 
                 // Initialize manual animation
                 setupManualAnimation();
+                
+                // Scroll to results
+                resultsContainer.scrollIntoView({ behavior: 'smooth' });
             }
             
             // Manual animation functionality
@@ -492,9 +494,17 @@
                 const manualControls = document.getElementById('manual-controls');
                 const prevStepBtn = document.getElementById('prev-step-btn');
                 const nextStepBtn = document.getElementById('next-step-btn');
-                const manualAnimationBtn = document.getElementById('manual-animation-btn');
                 const showProcessBtn = document.getElementById('show-process-btn');
                 const resetAnimationBtn = document.getElementById('reset-animation-btn');
+                const speedSlider = document.getElementById('animation-speed');
+                const speedValue = document.getElementById('speed-value');
+                
+                // Update speed value display when slider changes
+                if (speedSlider) {
+                    speedSlider.addEventListener('input', function() {
+                        speedValue.textContent = `${speedSlider.value}x`;
+                    });
+                }
                 
                 // Create animation sequence from ganttChartData
                 const animationSequence = [];
@@ -516,8 +526,7 @@
                 // Sort sequence by start time
                 animationSequence.sort((a, b) => a.startTime - b.startTime);
                 
-                // Remove the manualAnimationBtn references and event listener
-                // Instead, initialize the manual controls directly
+                // Initialize manual controls
                 let currentStep = -1;
                 let activeElements = [];
                 
@@ -628,7 +637,6 @@
                     });
                     
                     // Reset controls visibility
-                    const manualControls = document.getElementById('manual-controls');
                     manualControls.classList.remove('hidden');
                     showProcessBtn.classList.remove('hidden');
                     resetAnimationBtn.classList.add('hidden');
@@ -642,8 +650,7 @@
                     resetAnimation();
                     
                     // Reset controls visibility
-                    manualControls.classList.add('hidden');
-                    manualAnimationBtn.classList.remove('hidden');
+                    manualControls.classList.remove('hidden');
                     showProcessBtn.classList.remove('hidden');
                     resetAnimationBtn.classList.add('hidden');
                     
@@ -652,7 +659,7 @@
                 });
             }
             
-            // Show Process Waiting Time
+            // Animate processes to Gantt chart
             function animateProcessesToGantt() {
                 const processIcons = document.querySelectorAll('.process-icon');
                 const ganttBlocks = document.querySelectorAll('.process-block');
@@ -662,6 +669,8 @@
                 const showProcessBtn = document.getElementById('show-process-btn');
                 const resetAnimationBtn = document.getElementById('reset-animation-btn');
                 const manualControls = document.getElementById('manual-controls');
+                const speedSlider = document.getElementById('animation-speed');
+                
                 showProcessBtn.classList.add('hidden');
                 manualControls.classList.add('hidden');
                 resetAnimationBtn.classList.remove('hidden');
@@ -709,7 +718,7 @@
                         
                         // Re-enable the buttons after animation
                         showProcessBtn.classList.remove('hidden');
-                        manualAnimationBtn.classList.remove('hidden');
+                        manualControls.classList.remove('hidden');
                         resetAnimationBtn.classList.add('hidden');
                         return;
                     }
@@ -741,7 +750,7 @@
                         block.classList.remove('highlight-target', 'flash-animation');
                         
                         // Continue to the next step
-                        const animationSpeed = document.getElementById('animation-speed').value;
+                        const animationSpeed = speedSlider.value;
                         setTimeout(() => {
                             animateStep(stepIndex + 1);
                         }, 1000 / animationSpeed);
@@ -749,88 +758,558 @@
                 }
             }
             
-            // Show Process Waiting Time
+            // Show Process Waiting Time with enhanced UI and animation
             function showWaitingTime() {
                 resultTitle.textContent = 'Process Waiting Time';
-                let html = '<table class="table-auto w-full">';
-                html += '<thead><tr><th class="px-4 py-2">Process</th><th class="px-4 py-2">Waiting Time (msec)</th></tr></thead>';
-                html += '<tbody>';
                 
-                processData.forEach(process => {
-                    html += `<tr><td class="border px-4 py-2">${process.pid}</td><td class="border px-4 py-2">${formatNumber(process.waitingTime)}</td></tr>`;
+                // Create solution button
+                let html = `
+                <div class="flex justify-end mb-4">
+                    <button id="waiting-time-solution-btn" class="solution-btn">Show Solution</button>
+                </div>
+                <table class="enhanced-table">
+                    <thead>
+                        <tr>
+                            <th>Process</th>
+                            <th>Waiting Time (msec)</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+                
+                processData.forEach((process, index) => {
+                    html += `
+                        <tr>
+                            <td class="table-cell-animated" style="animation-delay: ${index * 100}ms">
+                                <div class="flex items-center">
+                                    <div class="process-icon bg-process-${parseInt(process.pid.substring(1))}" 
+                                        style="width: 30px; height: 30px; font-size: 0.8rem; margin-right: 10px;">
+                                        ${process.pid}
+                                    </div>
+                                    ${process.pid}
+                                </div>
+                            </td>
+                            <td class="table-cell-animated" style="animation-delay: ${(index * 100) + 50}ms">
+                                <span class="font-semibold">${formatNumber(process.waitingTime)}</span>
+                            </td>
+                        </tr>`;
                 });
                 
                 html += '</tbody></table>';
+                
+                // Add solution container (hidden initially)
+                html += `
+                <div id="waiting-time-solution" class="solution-container mt-4 hidden">
+                    <h3 class="text-lg font-semibold mb-2">Solution: Process Waiting Time</h3>
+                    <p class="mb-2">Waiting Time is calculated as:</p>
+                    <div class="formula">Waiting Time = Turnaround Time - Burst Time</div>
+                    <p class="mb-2">For each process:</p>
+                    <div id="waiting-time-steps"></div>
+                </div>`;
+                
                 resultContent.innerHTML = html;
                 resultsContainer.classList.remove('hidden');
+                
+                // Add solution button event listener
+                const solutionBtn = document.getElementById('waiting-time-solution-btn');
+                const solutionContainer = document.getElementById('waiting-time-solution');
+                const stepsContainer = document.getElementById('waiting-time-steps');
+                
+                if (solutionBtn && solutionContainer && stepsContainer) {
+                    solutionBtn.addEventListener('click', function() {
+                        solutionContainer.classList.remove('hidden');
+                        
+                        // Generate solution steps
+                        let stepsHtml = '';
+                        processData.forEach((process, index) => {
+                            stepsHtml += `
+                                <div class="solution-step mb-2" style="animation-delay: ${index * 200}ms">
+                                    <strong>${process.pid}:</strong> Waiting Time = Turnaround Time - Burst Time = 
+                                    ${formatNumber(process.turnaroundTime)} - ${formatNumber(process.burstTime)} = 
+                                    <span class="font-bold">${formatNumber(process.waitingTime)}</span>
+                                </div>`;
+                        });
+                        
+                        stepsContainer.innerHTML = stepsHtml;
+                        
+                        // Animate solution steps
+                        setTimeout(() => {
+                            const steps = document.querySelectorAll('.solution-step');
+                            steps.forEach((step, i) => {
+                                setTimeout(() => {
+                                    step.classList.add('animate-solution');
+                                }, i * 200);
+                            });
+                        }, 100);
+                        
+                        // Change button text
+                        solutionBtn.textContent = 'Solution Shown';
+                        solutionBtn.disabled = true;
+                    });
+                }
+                
+                // Scroll to results
+                resultsContainer.scrollIntoView({ behavior: 'smooth' });
             }
             
-            // Show Average Waiting Time
+            // Show Average Waiting Time with enhanced UI and animation
             function showAvgWaitingTime() {
                 resultTitle.textContent = 'Average Waiting Time';
+                
                 let totalWaitingTime = 0;
                 processData.forEach(process => {
                     totalWaitingTime += process.waitingTime;
                 });
                 const avgWaitingTime = totalWaitingTime / processData.length;
-                resultContent.innerHTML = `<p class="text-lg">Average Waiting Time: <span class="font-semibold">${formatNumber(avgWaitingTime)} msec</span></p>`;
+                
+                // Create solution button and enhanced metric card
+                let html = `
+                <div class="flex justify-end mb-4">
+                    <button id="avg-waiting-time-solution-btn" class="solution-btn">Show Solution</button>
+                </div>
+                <div class="metric-card-enhanced">
+                    <div class="metric-icon">⏱️</div>
+                    <div class="metric-label-enhanced">Average Waiting Time</div>
+                    <div class="metric-value-enhanced">${formatNumber(avgWaitingTime)}</div>
+                    <div class="metric-unit-enhanced">milliseconds</div>
+                    <div class="metric-detail">
+                        Based on ${processData.length} processes with a total waiting time of ${formatNumber(totalWaitingTime)} msec
+                    </div>
+                </div>
+                
+                <div id="avg-waiting-time-solution" class="solution-container-enhanced mt-4 hidden">
+                    <h3 class="text-lg font-semibold mb-2">Solution: Average Waiting Time</h3>
+                    <p class="mb-2">Average Waiting Time is calculated as:</p>
+                    <div class="formula">Average Waiting Time = Sum of all Process Waiting Times / Number of Processes</div>
+                    <div class="mt-3 mb-3">
+                        <strong>Step 1:</strong> Find the waiting time for each process
+                        <ul class="ml-6 list-disc">
+                            ${processData.map(p => `<li>${p.pid}: ${formatNumber(p.waitingTime)} msec</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="mt-3 mb-3">
+                        <strong>Step 2:</strong> Calculate the sum of all waiting times
+                        <div class="formula">
+                            ${processData.map(p => formatNumber(p.waitingTime)).join(' + ')} = ${formatNumber(totalWaitingTime)} msec
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <strong>Step 3:</strong> Divide by the number of processes
+                        <div class="formula">
+                            ${formatNumber(totalWaitingTime)} / ${processData.length} = ${formatNumber(avgWaitingTime)} msec
+                        </div>
+                    </div>
+                </div>`;
+                
+                resultContent.innerHTML = html;
                 resultsContainer.classList.remove('hidden');
+                
+                // Add solution button event listener
+                const solutionBtn = document.getElementById('avg-waiting-time-solution-btn');
+                const solutionContainer = document.getElementById('avg-waiting-time-solution');
+                
+                if (solutionBtn && solutionContainer) {
+                    solutionBtn.addEventListener('click', function() {
+                        solutionContainer.classList.remove('hidden');
+                        solutionBtn.textContent = 'Solution Shown';
+                        solutionBtn.disabled = true;
+                        
+                        // Animate solution container
+                        solutionContainer.classList.add('result-card');
+                    });
+                }
+                
+                // Scroll to results
+                resultsContainer.scrollIntoView({ behavior: 'smooth' });
             }
             
-            // Show Process Completion Time
+            // Show Process Completion Time with enhanced UI and animation
             function showCompletionTime() {
                 resultTitle.textContent = 'Process Completion Time';
-                let html = '<table class="table-auto w-full">';
-                html += '<thead><tr><th class="px-4 py-2">Process</th><th class="px-4 py-2">Completion Time (msec)</th></tr></thead>';
-                html += '<tbody>';
                 
-                processData.forEach(process => {
-                    html += `<tr><td class="border px-4 py-2">${process.pid}</td><td class="border px-4 py-2">${formatNumber(process.completionTime)}</td></tr>`;
+                // First show the Gantt chart for reference (without process pool)
+                let html = `
+                <div class="mb-4">
+                    <h3 class="text-lg font-semibold mb-2 text-center">Gantt Chart Reference</h3>
+                    <div class="gantt-container">
+                        <div class="overflow-x-auto" style="max-width: 100%;">
+                            <div class="gantt-chart relative" style="min-width: max-content; padding: 0 20px;">`;
+                
+                // Calculate total execution time to determine if we need scaling
+                const totalExecutionTime = ganttChartData.length > 0 ? 
+                    ganttChartData[ganttChartData.length - 1].endTime - ganttChartData[0].startTime : 0;
+                
+                // Determine scaling factor based on total execution time
+                let scaleFactor = 30; // default scale factor
+                if (totalExecutionTime > 50) {
+                    scaleFactor = 15;
+                } else if (totalExecutionTime > 30) {
+                    scaleFactor = 20;
+                } else if (totalExecutionTime > 20) {
+                    scaleFactor = 25;
+                }
+                
+                ganttChartData.forEach((item, index) => {
+                    const width = (item.endTime - item.startTime) * scaleFactor;
+                    const processNumber = parseInt(item.pid.substring(1));
+                    
+                    html += `
+                        <div class="gantt-block-container" style="display: inline-block; text-align: center;">
+                            <div class="process-block bg-process-${processNumber} animate-in" 
+                                data-pid="${item.pid}" data-index="${index}"
+                                style="width: ${width}px; border: 2px solid #333; border-right: ${index === ganttChartData.length - 1 ? '2px' : '1px'} solid #333;">
+                                ${item.pid}
+                            </div>
+                            <div class="time-label" style="width: ${width}px;">${formatNumber(item.startTime)}</div>
+                        </div>`;
+                    
+                    if (index === ganttChartData.length - 1) {
+                        html += `
+                            <div style="text-align: center;">
+                                <div style="width: 0;"></div>
+                                <div class="time-label">${formatNumber(item.endTime)}</div>
+                            </div>`;
+                    }
+                });
+                
+                html += `
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end mb-4">
+                    <button id="completion-time-solution-btn" class="solution-btn">Show Solution</button>
+                </div>
+                
+                <table class="enhanced-table">
+                    <thead>
+                        <tr>
+                            <th>Process</th>
+                            <th>Completion Time (msec)</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+                
+                processData.forEach((process, index) => {
+                    html += `
+                        <tr>
+                            <td class="table-cell-animated" style="animation-delay: ${index * 100}ms">
+                                <div class="flex items-center">
+                                    <div class="process-icon bg-process-${parseInt(process.pid.substring(1))}" 
+                                        style="width: 30px; height: 30px; font-size: 0.8rem; margin-right: 10px;">
+                                        ${process.pid}
+                                    </div>
+                                    ${process.pid}
+                                </div>
+                            </td>
+                            <td class="table-cell-animated" style="animation-delay: ${(index * 100) + 50}ms">
+                                <span class="font-semibold">${formatNumber(process.completionTime)}</span>
+                            </td>
+                        </tr>`;
                 });
                 
                 html += '</tbody></table>';
+                
+                // Add solution container (hidden initially)
+                html += `
+                <div id="completion-time-solution" class="solution-container mt-4 hidden">
+                    <h3 class="text-lg font-semibold mb-2">Solution: Process Completion Time</h3>
+                    <p class="mb-2">Completion Time is the time at which a process completes its execution.</p>
+                    <p class="mb-2">From the Gantt chart, we can see when each process finishes:</p>
+                    <div id="completion-time-steps"></div>
+                </div>`;
+                
                 resultContent.innerHTML = html;
                 resultsContainer.classList.remove('hidden');
+                
+                // Add animation to Gantt chart blocks
+                setTimeout(() => {
+                    const blocks = document.querySelectorAll('.process-block');
+                    blocks.forEach((block, index) => {
+                        setTimeout(() => {
+                            block.classList.add('animate-complete');
+                        }, index * 100);
+                    });
+                }, 100);
+                
+                // Add solution button event listener
+                const solutionBtn = document.getElementById('completion-time-solution-btn');
+                const solutionContainer = document.getElementById('completion-time-solution');
+                const stepsContainer = document.getElementById('completion-time-steps');
+                
+                if (solutionBtn && solutionContainer && stepsContainer) {
+                    solutionBtn.addEventListener('click', function() {
+                        solutionContainer.classList.remove('hidden');
+                        
+                        // Generate solution steps
+                        let stepsHtml = '';
+                        processData.forEach((process, index) => {
+                            // Find the last occurrence of this process in the Gantt chart
+                            const lastOccurrence = [...ganttChartData].reverse().find(item => item.pid === process.pid);
+                            
+                            stepsHtml += `
+                                <div class="solution-step mb-2" style="animation-delay: ${index * 200}ms">
+                                    <strong>${process.pid}:</strong> Completes at time 
+                                    <span class="font-bold">${formatNumber(process.completionTime)}</span>
+                                    ${lastOccurrence ? ` (as shown in the Gantt chart at time ${formatNumber(lastOccurrence.endTime)})` : ''}
+                                </div>`;
+                        });
+                        
+                        stepsContainer.innerHTML = stepsHtml;
+                        
+                        // Animate solution steps
+                        setTimeout(() => {
+                            const steps = document.querySelectorAll('.solution-step');
+                            steps.forEach((step, i) => {
+                                setTimeout(() => {
+                                    step.classList.add('animate-solution');
+                                }, i * 200);
+                            });
+                        }, 100);
+                        
+                        // Change button text
+                        solutionBtn.textContent = 'Solution Shown';
+                        solutionBtn.disabled = true;
+                    });
+                }
+                
+                // Scroll to results
+                resultsContainer.scrollIntoView({ behavior: 'smooth' });
             }
             
-            // Show Average Completion Time
+            // Show Average Completion Time with enhanced UI and animation
             function showAvgCompletionTime() {
                 resultTitle.textContent = 'Average Completion Time';
+                
                 let totalCompletionTime = 0;
                 processData.forEach(process => {
                     totalCompletionTime += process.completionTime;
                 });
                 const avgCompletionTime = totalCompletionTime / processData.length;
-                resultContent.innerHTML = `<p class="text-lg">Average Completion Time: <span class="font-semibold">${formatNumber(avgCompletionTime)} msec</span></p>`;
+                
+                // Create solution button and enhanced metric card
+                let html = `
+                <div class="flex justify-end mb-4">
+                    <button id="avg-completion-time-solution-btn" class="solution-btn">Show Solution</button>
+                </div>
+                <div class="metric-card-enhanced">
+                    <div class="metric-icon">🏁</div>
+                    <div class="metric-label-enhanced">Average Completion Time</div>
+                    <div class="metric-value-enhanced">${formatNumber(avgCompletionTime)}</div>
+                    <div class="metric-unit-enhanced">milliseconds</div>
+                    <div class="metric-detail">
+                        Based on ${processData.length} processes with a total completion time of ${formatNumber(totalCompletionTime)} msec
+                    </div>
+                </div>
+                
+                <div id="avg-completion-time-solution" class="solution-container-enhanced mt-4 hidden">
+                    <h3 class="text-lg font-semibold mb-2">Solution: Average Completion Time</h3>
+                    <p class="mb-2">Average Completion Time is calculated as:</p>
+                    <div class="formula">Average Completion Time = Sum of all Process Completion Times / Number of Processes</div>
+                    <div class="mt-3 mb-3">
+                        <strong>Step 1:</strong> Find the completion time for each process
+                        <ul class="ml-6 list-disc">
+                            ${processData.map(p => `<li>${p.pid}: ${formatNumber(p.completionTime)} msec</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="mt-3 mb-3">
+                        <strong>Step 2:</strong> Calculate the sum of all completion times
+                        <div class="formula">
+                            ${processData.map(p => formatNumber(p.completionTime)).join(' + ')} = ${formatNumber(totalCompletionTime)} msec
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <strong>Step 3:</strong> Divide by the number of processes
+                        <div class="formula">
+                            ${formatNumber(totalCompletionTime)} / ${processData.length} = ${formatNumber(avgCompletionTime)} msec
+                        </div>
+                    </div>
+                </div>`;
+                
+                resultContent.innerHTML = html;
                 resultsContainer.classList.remove('hidden');
+                
+                // Add solution button event listener
+                const solutionBtn = document.getElementById('avg-completion-time-solution-btn');
+                const solutionContainer = document.getElementById('avg-completion-time-solution');
+                
+                if (solutionBtn && solutionContainer) {
+                    solutionBtn.addEventListener('click', function() {
+                        solutionContainer.classList.remove('hidden');
+                        solutionBtn.textContent = 'Solution Shown';
+                        solutionBtn.disabled = true;
+                        
+                        // Animate solution container
+                        solutionContainer.classList.add('result-card');
+                    });
+                }
+                
+                // Scroll to results
+                resultsContainer.scrollIntoView({ behavior: 'smooth' });
             }
             
-            // Show Process Turn Around Time
+            // Show Process Turn Around Time with enhanced UI and animation
             function showTurnaroundTime() {
                 resultTitle.textContent = 'Process Turn Around Time';
-                let html = '<table class="table-auto w-full">';
-                html += '<thead><tr><th class="px-4 py-2">Process</th><th class="px-4 py-2">Turnaround Time (msec)</th></tr></thead>';
-                html += '<tbody>';
                 
-                processData.forEach(process => {
-                    html += `<tr><td class="border px-4 py-2">${process.pid}</td><td class="border px-4 py-2">${formatNumber(process.turnaroundTime)}</td></tr>`;
+                // Create solution button
+                let html = `
+                <div class="flex justify-end mb-4">
+                    <button id="turnaround-time-solution-btn" class="solution-btn">Show Solution</button>
+                </div>
+                <table class="enhanced-table">
+                    <thead>
+                        <tr>
+                            <th>Process</th>
+                            <th>Turn Around Time (msec)</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+                
+                processData.forEach((process, index) => {
+                    html += `
+                        <tr>
+                            <td class="table-cell-animated" style="animation-delay: ${index * 100}ms">
+                                <div class="flex items-center">
+                                    <div class="process-icon bg-process-${parseInt(process.pid.substring(1))}" 
+                                        style="width: 30px; height: 30px; font-size: 0.8rem; margin-right: 10px;">
+                                        ${process.pid}
+                                    </div>
+                                    ${process.pid}
+                                </div>
+                            </td>
+                            <td class="table-cell-animated" style="animation-delay: ${(index * 100) + 50}ms">
+                                <span class="font-semibold">${formatNumber(process.turnaroundTime)}</span>
+                            </td>
+                        </tr>`;
                 });
                 
                 html += '</tbody></table>';
+                
+                // Add solution container (hidden initially)
+                html += `
+                <div id="turnaround-time-solution" class="solution-container mt-4 hidden">
+                    <h3 class="text-lg font-semibold mb-2">Solution: Process Turn Around Time</h3>
+                    <p class="mb-2">Turn Around Time is calculated as:</p>
+                    <div class="formula">Turn Around Time = Completion Time - Arrival Time</div>
+                    <p class="mb-2">For each process:</p>
+                    <div id="turnaround-time-steps"></div>
+                </div>`;
+                
                 resultContent.innerHTML = html;
                 resultsContainer.classList.remove('hidden');
+                
+                // Add solution button event listener
+                const solutionBtn = document.getElementById('turnaround-time-solution-btn');
+                const solutionContainer = document.getElementById('turnaround-time-solution');
+                const stepsContainer = document.getElementById('turnaround-time-steps');
+                
+                if (solutionBtn && solutionContainer && stepsContainer) {
+                    solutionBtn.addEventListener('click', function() {
+                        solutionContainer.classList.remove('hidden');
+                        
+                        // Generate solution steps
+                        let stepsHtml = '';
+                        processData.forEach((process, index) => {
+                            stepsHtml += `
+                                <div class="solution-step mb-2" style="animation-delay: ${index * 200}ms">
+                                    <strong>${process.pid}:</strong> Turn Around Time = Completion Time - Arrival Time = 
+                                    ${formatNumber(process.completionTime)} - ${formatNumber(process.arrivalTime)} = 
+                                    <span class="font-bold">${formatNumber(process.turnaroundTime)}</span>
+                                </div>`;
+                        });
+                        
+                        stepsContainer.innerHTML = stepsHtml;
+                        
+                        // Animate solution steps
+                        setTimeout(() => {
+                            const steps = document.querySelectorAll('.solution-step');
+                            steps.forEach((step, i) => {
+                                setTimeout(() => {
+                                    step.classList.add('animate-solution');
+                                }, i * 200);
+                            });
+                        }, 100);
+                        
+                        // Change button text
+                        solutionBtn.textContent = 'Solution Shown';
+                        solutionBtn.disabled = true;
+                    });
+                }
+                
+                // Scroll to results
+                resultsContainer.scrollIntoView({ behavior: 'smooth' });
             }
             
-            // Show Average Turn Around Time
+            // Show Average Turn Around Time with enhanced UI and animation
             function showAvgTurnaroundTime() {
                 resultTitle.textContent = 'Average Turn Around Time';
+                
                 let totalTurnaroundTime = 0;
                 processData.forEach(process => {
                     totalTurnaroundTime += process.turnaroundTime;
                 });
                 const avgTurnaroundTime = totalTurnaroundTime / processData.length;
-                resultContent.innerHTML = `<p class="text-lg">Average Turn Around Time: <span class="font-semibold">${formatNumber(avgTurnaroundTime)} msec</span></p>`;
+                
+                // Create solution button and enhanced metric card
+                let html = `
+                <div class="flex justify-end mb-4">
+                    <button id="avg-turnaround-time-solution-btn" class="solution-btn">Show Solution</button>
+                </div>
+                <div class="metric-card-enhanced">
+                    <div class="metric-icon">🔄</div>
+                    <div class="metric-label-enhanced">Average Turn Around Time</div>
+                    <div class="metric-value-enhanced">${formatNumber(avgTurnaroundTime)}</div>
+                    <div class="metric-unit-enhanced">milliseconds</div>
+                    <div class="metric-detail">
+                        Based on ${processData.length} processes with a total turnaround time of ${formatNumber(totalTurnaroundTime)} msec
+                    </div>
+                </div>
+                
+                <div id="avg-turnaround-time-solution" class="solution-container-enhanced mt-4 hidden">
+                    <h3 class="text-lg font-semibold mb-2">Solution: Average Turn Around Time</h3>
+                    <p class="mb-2">Average Turn Around Time is calculated as:</p>
+                    <div class="formula">Average Turn Around Time = Sum of all Process Turn Around Times / Number of Processes</div>
+                    <div class="mt-3 mb-3">
+                        <strong>Step 1:</strong> Find the turn around time for each process
+                        <ul class="ml-6 list-disc">
+                            ${processData.map(p => `<li>${p.pid}: ${formatNumber(p.turnaroundTime)} msec</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div class="mt-3 mb-3">
+                        <strong>Step 2:</strong> Calculate the sum of all turn around times
+                        <div class="formula">
+                            ${processData.map(p => formatNumber(p.turnaroundTime)).join(' + ')} = ${formatNumber(totalTurnaroundTime)} msec
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <strong>Step 3:</strong> Divide by the number of processes
+                        <div class="formula">
+                            ${formatNumber(totalTurnaroundTime)} / ${processData.length} = ${formatNumber(avgTurnaroundTime)} msec
+                        </div>
+                    </div>
+                </div>`;
+                
+                resultContent.innerHTML = html;
                 resultsContainer.classList.remove('hidden');
+                
+                // Add solution button event listener
+                const solutionBtn = document.getElementById('avg-turnaround-time-solution-btn');
+                const solutionContainer = document.getElementById('avg-turnaround-time-solution');
+                
+                if (solutionBtn && solutionContainer) {
+                    solutionBtn.addEventListener('click', function() {
+                        solutionContainer.classList.remove('hidden');
+                        solutionBtn.textContent = 'Solution Shown';
+                        solutionBtn.disabled = true;
+                        
+                        // Animate solution container
+                        solutionContainer.classList.add('result-card');
+                    });
+                }
+                
+                // Scroll to results
+                resultsContainer.scrollIntoView({ behavior: 'smooth' });
             }
             
             // Notification function
@@ -865,6 +1344,9 @@
             function formatNumber(number) {
                 return parseFloat(number).toFixed(1);
             }
+            
+            // Initialize with 5 processes
+            generateProcessTable(5);
         });
     </script>
 </body>
